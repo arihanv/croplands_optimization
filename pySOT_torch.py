@@ -5,8 +5,12 @@ from threading import Thread, current_thread
 from subprocess32 import Popen, PIPE
 from datetime import datetime
 import matplotlib.pyplot as plt
+from scipy.signal import convolve2d
+from skimage.transform import rotate
+from skimage import filters
 import time
 import math
+from sklearn.metrics import confusion_matrix
 
 class TorchOptim:
 
@@ -62,6 +66,11 @@ class TorchOptim:
     def objfunction(self, w):
         
         # If the inputted width is even, make it odd
+
+        image = plt.imread('./original.jpg').mean(axis=-1)
+        ground_truth = plt.imread('./best_map.png').mean(axis=-1)
+        # use dilation on ground truth
+
         if(w%2 == 0):
             w+=1
 
@@ -87,6 +96,70 @@ class TorchOptim:
 
         if len(x) != self.dim:
             raise ValueError('Dimension mismatch')
+
+        edge_pred = convolve2d(image, x, mode='same')
+
+        #Use otsu histogram thresholding to find an optimal threshold to binarize the edge prediction image
+        val = filters.threshold_otsu(edge_pred)
+
+        final_map = np.zeros_like(edge_pred)
+
+        # Binarize the image using the optimal threshold found using otsu
+        final_map[edge_pred > val] = 1
+
+        cm = confusion_matrix(ground_truth.argmax(axis=-1).ravel(), final_map.ravel())
+        tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
+
+        # Compute BER
+        # if statement to avoid division by zero error
+        if tp + fn > 0 and tn + fp > 0:
+            BER = 1 - 0.5 * (tp / (tp + fn) + tn / (tn + fp))
+        else:
+            BER = 1
+        
+        print(BER)
+
+
+
+        # put a threshold, to binarize it
+        # otsu thresholding
+        # histogram threshsholding
+        # maximum distances from the peaks
+
+        # edge greater than val is one, anything below dont change value
+
+
+        # cm = confusion_matrix(new_GT.argmax(axis=-1).ravel(), final_pred.ravel())
+
+        # make sure tp and fn exist, if not then return 1, min is 0
+
+        # tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
+        # BER = 1 - 0.5 * (tp / (tp + fn) + tn / (tn + fp))
+
+        # # after filter is obtained apply filter with convolution on the image, edge map, compare to ground truth
+        # #compare that prediction to the ground truth, 
+
+        # perform closing algorithm or smoothing on the edge map image
+
+        # use morphological operations from opencv python
+
+        # use dilation ******* using open cv2
+
+        # manually create filter and find various metrics to see which one is best
+        #BER metric (Balanced error rate) to measure performance
+        # don't do 1 - BER,  minimize itself
+
+        #Mean IOU metric (Amount of alignment of edges between ground truth and prediction)
+        # return (1 - mean IOU)
+
+        #assess precision, recall -> High f1 for success
+        #1 - f1 score
+
+        #compare final_map to ground truth
+
+        # find boundary pixel accuracy metric
+
+        # # return 1- accuracy
 
         
 
