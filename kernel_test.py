@@ -48,18 +48,36 @@ def objfunction(w):
             f = np.transpose(f)
         return f
 
-    x = createFilter_v2(w)
+    # Get vertical and horizontal sobels
+    vert_sobel = createFilter_v2(w)
+    horz_sobel = createFilter_v2(w, o='horz')
 
     # Apply the filter on the image
-    edge_pred = convolve2d(image, x, mode='same')
+    vert_edge_pred = convolve2d(image, vert_sobel, mode='same')
+    horz_edge_pred = convolve2d(image, horz_sobel, mode='same')
 
+    edge_pred = np.add(vert_edge_pred, horz_edge_pred)
 
     #Use otsu histogram thresholding to find an optimal threshold to binarize the edge prediction image
+    # vert_val = filters.threshold_otsu(vert_edge_pred)
+    # vert_final_map = np.zeros_like(vert_edge_pred)
+
+    # horz_val = filters.threshold_otsu(horz_edge_pred)
+    # horz_final_map = np.zeros_like(horz_edge_pred)
+
     val = filters.threshold_otsu(edge_pred)
+
     final_map = np.zeros_like(edge_pred)
 
+    print(final_map.shape)
+    print(ground_truth.shape)
+
     # Binarize the image using the optimal threshold found using otsu
+    # vert_final_map[vert_edge_pred > vert_val] = 1
+    # horz_final_map[horz_edge_pred > horz_val] = 1
     final_map[edge_pred > val] = 1
+
+
 
     # Compute BER
     cm = confusion_matrix(ground_truth.argmax(axis=-1).ravel(), final_map.argmax(axis=-1).ravel())
@@ -94,6 +112,6 @@ def objfunction(w):
     return BER
 
 # Call function
-for i in np.arange(1, 10, 2):
+for i in np.arange(1, 25, 2):
     print(f"BER is {objfunction(i)} for width of {i}")
     print()
