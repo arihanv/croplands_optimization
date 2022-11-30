@@ -61,20 +61,6 @@ def objfunction(w):
     # Binarize the image using the optimal threshold found using otsu
     final_map[edge_pred > val] = 1
 
-    # Plot ground truth and final map
-    fig,ax = plt.subplots(1,2)
-    ax[1].cla()
-    ax[0].cla()
-    ax[0].imshow(ground_truth,'Greys_r')
-    ax[0].set_title(f"Ground Truth (Dilated by {i} x {i})")
-    ax[1].imshow(final_map,'Greys_r')
-    ax[1].set_title(f"Final Map with kernel width of {w}")
-    fig.suptitle("Ground Truth vs. Final Map")
-    fig.tight_layout()
-    fig.subplots_adjust(top=0.88)
-    plt.show(block=False)
-    plt.pause(1.5)
-
     # Compute BER
     cm = confusion_matrix(ground_truth.argmax(axis=-1).ravel(), final_map.argmax(axis=-1).ravel())
     tn, fp, fn, tp = cm[0][0], cm[0][1], cm[1][0], cm[1][1]
@@ -84,6 +70,23 @@ def objfunction(w):
         BER = 1 - 0.5 * (tp / (tp + fn) + tn / (tn + fp))
     else:
         BER = 1
+
+
+    # Plot ground truth and final map
+    fig,ax = plt.subplots(1,2)
+    ax[1].cla()
+    ax[0].cla()
+    ax[0].imshow(ground_truth,'Greys_r')
+    ax[0].set_title(f"Ground Truth (Dilated by {i} x {i})")
+    ax[1].imshow(final_map,'Greys_r')
+    ax[1].set_title(f"Final Map with kernel width of {w}")
+    fig.suptitle(f"Ground Truth vs. Final Map\nBER: {BER}")
+    fig.tight_layout()
+    fig.subplots_adjust(top=0.88)
+    plt.show(block=False)
+    plt.pause(1.5)
+
+    plt.savefig(f'comparisons/{w}_{w}')
 
     end_millis = int(round(time.time() * 1000))
     print('Ended: ' + str(datetime.now()) + ' (' + str(end_millis) + ')')
