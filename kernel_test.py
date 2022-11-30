@@ -97,7 +97,7 @@ def objfunction(w):
     ax[0].imshow(ground_truth,'Greys_r')
     ax[0].set_title(f"Ground Truth (Dilated by {i} x {i})")
     ax[1].imshow(final_map,'Greys_r')
-    ax[1].set_title(f"Final Map with kernel width of {w}")
+    ax[1].set_title(f"Final Map with zeros width of {w}")
     fig.suptitle(f"Ground Truth vs. Final Map\nBER: {BER}")
     fig.tight_layout()
     fig.subplots_adjust(top=0.88)
@@ -105,6 +105,8 @@ def objfunction(w):
     plt.pause(1.5)
 
     plt.savefig(f'comparisons/{w}_{w}')
+
+    plt.close()
 
     end_millis = int(round(time.time() * 1000))
     print('Ended: ' + str(datetime.now()) + ' (' + str(end_millis) + ')')
